@@ -68,6 +68,9 @@
     path: "/etc/default/unifi"
     regexp: "^JAVA_HOME="
     line: "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf"
+    owner: root
+    group: root
+    mode: '0644'
   become: yes
   notify: restart unifi
   tags: unifi_controller

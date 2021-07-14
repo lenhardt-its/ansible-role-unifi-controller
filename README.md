@@ -40,22 +40,23 @@ unifi_site_config:
               inet:
                 - "10.0.1.2"
   - name: 687653
-    interfaces:
-      tunnel:
-        tun0:
-          address:
-            - "2001:db8::1/127"
-          local-ip: "192.0.2.1"
-          remote-ip: "203.0.113.1"
-          encapsulation: "sit"
-          description: "ipv6_tunnel"
-          firewall:
-            in:
-              ipv6-name: "WANv6_IN"
-            out:
-              ipv6-name: "WANv6_OUT"
-            local:
-              ipv6-name: "WANv6_LOCAL"
+    config:
+      interfaces:
+        tunnel:
+          tun0:
+            address:
+              - "2001:db8::1/127"
+            local-ip: "192.0.2.1"
+            remote-ip: "203.0.113.1"
+            encapsulation: "sit"
+            description: "ipv6_tunnel"
+            firewall:
+              in:
+                ipv6-name: "WANv6_IN"
+              out:
+                ipv6-name: "WANv6_OUT"
+              local:
+                ipv6-name: "WANv6_LOCAL"
 ```
 
 ### Playbook
