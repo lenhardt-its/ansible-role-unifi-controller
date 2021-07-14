@@ -1,76 +1,104 @@
 ---
+- name: add apt-key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 06E85760C0A52C50
+  become: yes
+  tags: unifi_controller
+
 - name: install dependencies
   apt:
-    name: "{{ unifi_package_dependencies }}"
+    name:
+      - gnupg
+      - ca-certificates
+      - apt-transport-https
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+  tags: unifi_controller
+
+- name: add apt-repo
+  apt_repository:
+    repo: "deb https://www.ui.com/downloads/unifi/debian {{ unifi_release }} ubiquiti"
     state: present
   become: yes
-
-- name: install ubnt apt key
-  apt_key:
-    keyserver: "{{ unifi_repo_key_server }}"
-    id: "{{ unifi_repo_key_id }}"
-  become: yes
-
-- name: install ubnt apt repository
-  apt_repository:
-    filename: "{{ unifi_repo_name }}"
-    repo: "{{ unifi_repo_url }}"
-    state: "{{ unifi_repo_state }}"
-  become: yes
-  when: ansible_os_family == "Debian"
+  tags: unifi_controller
 
 - name: install java packages
   apt:
     allow_unauthenticated: yes
-    name: "{{ unifi_java_packages }}"
-    state: "{{ unifi_packages_state }}"
+    name: "openjdk-8-jre-headless"
+    state: present
     update_cache: yes
   become: yes
   notify:
     - restart unifi
 
-- name: install unifi-controller packages
+- name: install unifi_controller
   apt:
-    allow_unauthenticated: yes
-    name: "{{ unifi_packages }}"
-    state: "{{ unifi_packages_state }}"
+    name: unifi
+    state: present
     update_cache: yes
+    cache_valid_time: 3600
   become: yes
-  notify:
-    - restart unifi
+  tags: unifi_controller
 
 - name: update snappy java
   get_url:
-    url: "{{ unifi_java_snappy_url }}"
-    checksum: "{{ unifi_java_snappy_checksum }}"
-    dest: "{{ unifi_java_snappy_file }}"
+    url: "https://repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.2.6/snappy-java-1.1.2.6.jar"
+    checksum: "sha256:61f7bc4076be0320ab4ef076fb6d83e3f649c3caf9ffb6031654a73f9c23732f"
+    dest: "/usr/lib/unifi/lib/snappy-java-1.1.2.6.jar"
   become: yes
-  notify:
-    - restart unifi
+  notify: restart unifi
+  tags: unifi_controller
 
 - name: disable mongodb default instance
   lineinfile:
-    path: '{{ unifi_mongodb_config }}'
-    regexp: '^ENABLE_MONGODB='
-    line: 'ENABLE_MONGODB=no'
+    path: "/etc/mongodb.conf"
+    regexp: "^ENABLE_MONGODB="
+    line: "ENABLE_MONGODB=no"
   become: yes
-  notify:
-    - restart mongodb
+  notify: restart mongodb
+  tags: unifi_controller
 
 - name: configure java for unifi
   lineinfile:
     create: yes
-    path: '{{ unifi_config_file }}'
-    regexp: '^JAVA_HOME='
-    line: 'JAVA_HOME={{ unifi_java_home }}'
+    path: "/etc/default/unifi"
+    regexp: "^JAVA_HOME="
+    line: "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf"
   become: yes
-  notify:
-    - restart unifi
+  notify: restart unifi
+  tags: unifi_controller
 
-- name: manage services
-  service:
-    name: "{{ item }}"
-    state: "{{ unifi_services_state }}"
-    enabled: "{{ unifi_services_enabled }}"
-  become: yes
-  with_items: "{{ unifi_services }}"
+- name: create site directory folders
+  file:
+    path: "/var/lib/unifi/sites/{{ item.name }}"
+    state: "directory"
+    owner: "unifi"
+    group: "unifi"
+    mode: "0750"
+  with_items: "{{ unifi_site_config }}"
+  become: true
+  tags: unifi_controller
+
+- name: generte per site config.gateway.json
+  copy:
+    content: "{{ item.config | to_nice_json(indent=2, sort_keys=False) }}\n"
+    dest: "/var/lib/unifi/sites/{{ item.name }}/config.gateway.json"
+    owner: "unifi"
+    group: "unifi"
+    mode: "0640"
+  with_items: "{{ unifi_site_config }}"
+  become: true
+  notify: restart unifi
+  tags: unifi_controller
+
+- name: ensure service is started and enabled
+  systemd:
+    daemon_reload: true
+    name: unifi
+    enabled: true
+  become: true
+  tags: unifi_controller

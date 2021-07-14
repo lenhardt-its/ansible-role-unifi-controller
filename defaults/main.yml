@@ -1,26 +1,29 @@
 ---
-unifi_package_dependencies:
-  - gnupg
-  - apt-transport-https
-unifi_packages:
-  - unifi
-unifi_packages_state: present
-unifi_repo_name: ubiquiti
-unifi_repo_url: deb http://www.ubnt.com/downloads/unifi/debian stable ubiquiti
-unifi_repo_state: present
-unifi_repo_key_server: keyserver.ubuntu.com
-unifi_repo_key_id: 06E85760C0A52C50
-unifi_services:
-  - unifi
-unifi_services_state: started
-unifi_services_enabled: yes
-unifi_config_file: /etc/default/unifi
-unifi_config: /var/lib/unifi/system.properties
-unifi_java_packages: openjdk-8-jre-headless
-unifi_java_home: /usr/lib/jvm/java-8-openjdk-armhf
-unifi_java_snappy_url: https://repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.2.6/snappy-java-1.1.2.6.jar
-unifi_java_snappy_checksum: sha256:61f7bc4076be0320ab4ef076fb6d83e3f649c3caf9ffb6031654a73f9c23732f
-unifi_java_snappy_file: /usr/lib/unifi/lib/snappy-java-1.0.5.jar
-unifi_mongodb_config: /etc/mongodb.conf
-unifi_mongodb_services:
-  - mongodb
+unifi_release: stable
+unifi_site_config:
+  - name: 1262345
+    config:
+      system:
+        static-host-mapping:
+          host-name:
+            # 1st floor printer, southwest corner
+            myprinter.corp.mydomain.tld:
+              inet:
+                - "10.0.1.2"
+  - name: 687653
+    interfaces:
+      tunnel:
+        tun0:
+          address:
+            - "2001:db8::1/127"
+          local-ip: "192.0.2.1"
+          remote-ip: "203.0.113.1"
+          encapsulation: "sit"
+          description: "ipv6_tunnel"
+          firewall:
+            in:
+              ipv6-name: "WANv6_IN"
+            out:
+              ipv6-name: "WANv6_OUT"
+            local:
+              ipv6-name: "WANv6_LOCAL"

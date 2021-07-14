@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  role_name: unifi_controller
+  author: Dominik Lenhardt
+  description: Ansible role for installing and configuring Unifi Poller
+  license: "MIT"
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - bionic
+  galaxy_tags:
+  - system
+  - network
+  - linux
+  - unifi
+  - controller
+  - unifi_controller
+dependencies: []
