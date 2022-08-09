@@ -3,7 +3,7 @@
   apt_key:
     keyserver: keyserver.ubuntu.com
     id: 06E85760C0A52C50
-  become: yes
+  become: true
   tags: unifi_controller
 
 - name: install dependencies
@@ -15,7 +15,7 @@
     state: present
     update_cache: yes
     cache_valid_time: 3600
-  become: yes
+  become: true
   tags: unifi_controller
 
 - name: add apt-repo
@@ -24,7 +24,7 @@
     state: present
     update_cache: true
     filename: unifi.list
-  become: yes
+  become: true
   tags: unifi_controller
 
 - name: install java packages
@@ -33,7 +33,7 @@
     name: "openjdk-8-jre-headless"
     state: present
     update_cache: yes
-  become: yes
+  become: true
   notify:
     - restart unifi
 
@@ -43,7 +43,7 @@
     state: present
     update_cache: yes
     cache_valid_time: 3600
-  become: yes
+  become: true
   tags: unifi_controller
 
 - name: update snappy java
@@ -51,16 +51,16 @@
     url: "https://repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.2.6/snappy-java-1.1.2.6.jar"
     checksum: "sha256:61f7bc4076be0320ab4ef076fb6d83e3f649c3caf9ffb6031654a73f9c23732f"
     dest: "/usr/lib/unifi/lib/snappy-java-1.1.2.6.jar"
-  become: yes
+  become: true
   notify: restart unifi
   tags: unifi_controller
 
 - name: disable mongodb default instance
   lineinfile:
-    path: "/etc/mongodb.conf"
+    path: "/etc/mongod.conf"
     regexp: "^ENABLE_MONGODB="
     line: "ENABLE_MONGODB=no"
-  become: yes
+  become: true
   notify: restart mongodb
   tags: unifi_controller
 
@@ -69,11 +69,11 @@
     create: yes
     path: "/etc/default/unifi"
     regexp: "^JAVA_HOME="
-    line: "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf"
+    line: "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-{{ go_arch }}"
     owner: root
     group: root
     mode: '0644'
-  become: yes
+  become: true
   notify: restart unifi
   tags: unifi_controller
 
